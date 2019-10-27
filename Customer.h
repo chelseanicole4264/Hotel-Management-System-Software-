@@ -220,7 +220,7 @@ public:
 			bookingCustomer << "            Customer Reservation Details      " << endl;
 			bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
 			bookingCustomer << " # of Guest During Stay : " << guest << endl;
-			bookingCustomer << " Duration of Stay: " <<  r.checkOutDate << " TO " << r.checkInDate << endl;
+			bookingCustomer << " Duration of Stay: " << &reservationClass::checkOutDate << " TO " << &reservationClass::checkInDate << endl; // error here bc of the r.checkInDate and r.checkout, had to update it to compile
 			bookingCustomer << " Package: " << package << endl;
 			if (package == 1) {
 				bookingCustomer << " Single King Suite " << endl;

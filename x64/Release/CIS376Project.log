@@ -1,0 +1,21 @@
+﻿  main.cpp
+c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(64): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(69): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(75): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(104): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(108): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(112): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(116): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(52): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(57): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(62): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(132): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(136): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(141): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(145): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  Generating code
+  0 of 221 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  CIS376Project.vcxproj -> C:\Users\csamano\Documents\School\Hotel-Management-System-Software--master\x64\Release\CIS376Project.exe
