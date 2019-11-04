@@ -31,6 +31,9 @@ public:
 		cout << "Year: "; 
 		cin >> y; 
 		cout << "Your Check In Date is as follows... " << m << " /"  << d << "/ " << y << endl; 
+
+		checkInDate = m.append("/") + d.append("/") + y;
+
 		return checkInDate; 
 	}
 // Check Out Function
@@ -48,6 +51,9 @@ public:
 		cout << "Year: ";
 		cin >> y1;
 		cout << "Your Check Out Date is as follows.... " << m1 << " /" << d1 << "/ " << y1 << endl;
+		
+		checkOutDate = m1.append("/") + d1.append("/") + y1;
+
 		return checkOutDate;
 	}
 // Room Packages Function 

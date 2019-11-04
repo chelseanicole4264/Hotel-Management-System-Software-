@@ -6,7 +6,9 @@ Purpose: Customer Class for Hotel System
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <vector>
 #include "Reservartions.h"
+
 using namespace std;
 
 class userCustomer {
@@ -14,6 +16,8 @@ private:
 	int cUsernameSize;
 	int cPasswordSize;
 	// Customer Account Datatypes 
+	int customerID = 0; /* Retrieve from db*/
+	int rewards = 0; 
 	string firstName = " ";
 	string lastName = " "; 
 	string userName = " ";
@@ -29,14 +33,17 @@ private:
 	string n = "no";
 	ofstream bookingCustomer;
 	string customerCheckIn = " / / /", customerCheckOut = " / / /";
+	HotelDB  hotel; 
+
 	// Customer Reward Points Datatypes
+
+
 public: 
 /* CUSTOMER ACCOUNT */
 
 // Customer Account Information Function
 	void customerCreateAccount() {
-		ofstream accountFile;
-		accountFile.open("CustomerAccount.txt");
+
 	//Customer Enters Account Information 
 		cout << "To create your account, please enter the following details below: " << endl; 
 		cout << "Name: ";
@@ -45,7 +52,7 @@ public:
 		cin >> emailAddress;
 		cout << "Phone Number: ";
 		cin >> phoneNumber;
-		cout << "Username (Must be at least 8  characters) : ";
+		cout << "Username (Must be at least 8 characters) : ";
 		cin >> userName;
 		cout << endl;
 	// Checking the size of the username 
@@ -65,23 +72,20 @@ public:
 			cout << "Password: ";
 			cin >> password;
 		}
-	//Customer Account File Info 
-		if (accountFile.is_open()) {
-			accountFile << "     Customer Account Details" << endl;
-			accountFile << " Name: " << firstName << lastName << endl;
-			accountFile << " Email: " << emailAddress << endl;
-			accountFile << " Phone Number: " << phoneNumber << endl;
-			accountFile << " Username: " << userName << endl;
-			accountFile << " Password: " << password << endl;
-			accountFile.close();
-			cout << "You're Account Information has be saved! " << endl;
+
+	// Save Customer Account Info 
+		hotel.saveCustomerData(userName, password, firstName, lastName, emailAddress, phoneNumber);
+		
+		if (hotel.customerExists())
+		{
+			cout << "You're Account Information has been saved! " << endl;
 			cout << "To Proceed, Please Login! " << endl;
-			cout << endl;
 		}
-		else {
-			cout << "Account information could not be saved! Please try again! " << endl; 
+		else 
+		{	
+			cout << "Account information could not be saved! Please try again! " << endl;
 		}
-		accountFile.close();
+
 		customerLogin(); 
 	}
 // Customer Menu Option for Login
@@ -121,9 +125,8 @@ public:
 
 // Customer Login to System 
 	void customerLogin() {
-		ifstream accountFile;
 		string line;
-		accountFile.open("CustomerAccount.txt");
+
 		cout << endl;
 		cout << " Welcome to Mo's Hotel " << endl;
 		cout << "Username: " << endl;
@@ -144,22 +147,21 @@ public:
 			cin >> password;
 			cPasswordSize = password.length();
 		}
+
+		hotel.getCustomerData(customerID, userName, password, firstName, lastName, emailAddress, phoneNumber, rewards);
 		customerMenuOptionTwo();
 	}
-// Customer Account File Information 
+// Customer Account File Information
+
 	void customerAccountInformation() {
 		string y = "yes";
-		ifstream accountFile;
-		accountFile.open("TheCustomerAccount.txt");
-		if (accountFile.is_open()) {
-			cout << "     Customer Account Details" << endl;
-			cout << " Name: " << firstName << lastName << endl;
-			cout << " Email: " << emailAddress << endl;
-			cout << " Phone Number: " << phoneNumber << endl;
-			cout << " Username: " << userName << endl;
-			cout << " Password: " << password << endl;
-		}
-		accountFile.close();
+		cout << endl << "     Customer Account Details" << endl;
+		cout << " Name: " << firstName <<" "<< lastName << endl;
+		cout << " Email: " << emailAddress << endl;
+		cout << " Phone Number: " << phoneNumber << endl;
+		cout << " Username: " << userName << endl;
+		cout << " Password: " << password << endl;
+
 		cout << "Would you like to go back to the home screen? ";
 		if (cin >> y) {
 			customerMenuOptionTwo();
@@ -197,16 +199,17 @@ public:
 	void customerBookReservations() {
 		string m = month, d = day, y = year;
 		string m1 = month, d1 = day, y1 = year;
-		bookingCustomer.open("CustomerReservationBookings.txt");
+
 		cout << "To begin a new reservations booking, please enter the following details below: " << endl;
 		cout << "First Name: ";
 		cin >> customerFirstName;
 		cout << "Last Name: ";
 		cin >> customerLastName;
 		cout << "# of Guest: ";
-		cin >> guest;
-		r.checkInDate(m, d, y);
-		r.checkOutDate(m1, d1, y1);
+		cin >> guest; 
+		customerCheckIn = r.checkInDate(m, d, y); // NOTE 
+		customerCheckOut = r.checkOutDate(m1, d1, y1); // NOTE
+
 		cout << "Packages, Would you like a special type? ";
 		if (cin >> y) {
 			cout << endl;
@@ -214,26 +217,7 @@ public:
 		}
 		else {
 			cout << "The Following Rooms are below: " << endl;
-		}
-		// Copies Customer Booking Information to File 
-		if (bookingCustomer.is_open()) {
-			bookingCustomer << "            Customer Reservation Details      " << endl;
-			bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-			bookingCustomer << " # of Guest During Stay : " << guest << endl;
-			bookingCustomer << " Duration of Stay: " << &reservationClass::checkOutDate << " TO " << &reservationClass::checkInDate << endl; // error here bc of the r.checkInDate and r.checkout, had to update it to compile
-			bookingCustomer << " Package: " << package << endl;
-			if (package == 1) {
-				bookingCustomer << " Single King Suite " << endl;
-				bookingCustomer << " Price: $195 a night " << endl;
-			}
-			else if (package == 2) {
-				bookingCustomer << " Double King Suite " << endl;
-				bookingCustomer << " Price: $155 a night " << endl;
-			}
-			else if (package == 3) {
-				bookingCustomer << " Deluxe Suite " << endl;
-				bookingCustomer << " Price: $300 a night " << endl;
-			}
+			// NOTE what is suppose to happen here?
 		}
 	}
 
@@ -241,785 +225,93 @@ public:
 	void customerReservationAddOns() {
 
 	}
+
 	// Customer Room Packages Function
 	void customerRoomPackages() {
 		string y = "yes";
 		string n = "no";
 		int amentityOption, daysForAmen;
-		int p1Price = 195, p2Price = 155, p3Price = 250;
-		int a1price = 10, a2price = 20, a3price = 30, a4price = 40, a5price = 60;
+		int total = 0;
+
+		vector<map<string, string>> allPackageInfo = hotel.getPackageTypes();
+
 		// Room Packages Information 
 		cout << endl;
-		cout << "The Followiing Room Packages are listed below: " << endl;
+		cout << "The Following Room Packages are listed below: " << endl;
 		cout << endl;
-		cout << "1. Single King Suite " << endl;
-		cout << "Includes TV, Free Wifi, Window View " << endl;
-		cout << "Price: $195 a night " << endl;
-		cout << endl;
-		cout << "2. Double King Suite " << endl;
-		cout << "Includes TV, Free Wifi, Window View" << endl;
-		cout << "Hotel Amentities Included: Pool, Breakfast" << endl;
-		cout << "Price: $155 a night " << endl;
-		cout << endl;
-		cout << "3. Deluxe King Suite " << endl;
-		cout << "Includes TV, Free Wifi, Window View, Jetted Tub, Kitchenate Area" << endl;
-		cout << "Hotel Amentities Included: Pool, Hot Tub (Unlimited Use), Breakfast, Fitness Center (Unlimited Use) " << endl;
-		cout << "Price: $250 a night " << endl;
-		cout << endl;
+
+		for (int i = 0; i < allPackageInfo.size(); i++)
+		{
+			cout << i + 1 << ". " << allPackageInfo[i]["PackageName"] << endl;
+			cout << "Includes " << allPackageInfo[i]["PackageDescription"] << endl;
+			if (allPackageInfo[i]["Amentities"] != "") {
+				cout << "Hotel Amentities Included: " << allPackageInfo[i]["Amentities"] << endl;
+			}
+			cout << "Price: $" << allPackageInfo[i]["BaseCost"] << " a night" << endl << endl;
+		}
+
 		cout << "Which Package Would you like? ";
 		cin >> package;
-		switch (package) {
-			// Single Suite Switch Casse 
-		case 1:
-			cout << "You've selected the Single Suite, excellent choice! " << endl;
+
+		while (package == 0 || package > allPackageInfo.size())
+		{
+			cout << "Please select from the packages listed above." << endl;
+			cin >> package;
+		}
+
+		map<string, string> chosenPackage = allPackageInfo[package - 1];
+
+		cout << "You've selected the " << chosenPackage["PackageName"] << ", excellent choice! " << endl;
+		cout << endl;
+		cout << "Would you like you to add on any amentities? " << endl << endl;
+
+		if (cin >> y) {
+			cout << "**** Hotel Amentities Add Ons ****" << endl;
+			vector<map<string, string>> allAddonInfo = hotel.getAddons();
+
+			for (int i = 0; i < allAddonInfo.size(); i++){
+				cout << i + 1 << ". " << allAddonInfo[i]["AmenityName"] << " $" << allAddonInfo[i]["BaseCost"] << " a day," << allAddonInfo[i]["AmenityDescription"] << endl;
+			}
+
+			cout << "Which amentities would you like to add? " << endl;
+			cin >> amentityOption;
+
+			while (amentityOption == 0 || amentityOption > allAddonInfo.size())
+			{
+				cout << "Please select from the amentities listed above." << endl;
+				cin >> amentityOption;
+			}
+
+			map<string, string> chosenAddon = allAddonInfo[amentityOption - 1];
+
 			cout << endl;
-			cout << "Would you like you to add on any amentities? " << endl;
-			if (cin >> y) {
-				cout << endl;
-				cout << "**** Hotel Amentities Add Ons ****" << endl;
-				cout << "1. Hot Tub $10 a day, Maximum use 5 days per stay " << endl;
-				cout << "2. Fitness Center $10 a day, Maximum use 5 days per stay " << endl;
-				cout << "Which amentities would you like to add? " << endl;
-				cin >> amentityOption;
-				// Single Suite Amentities Switch Case 
-				switch (amentityOption)
-				{
-				case 1:
-					cout << endl;
-					cout << "**** Hot Tub *****" << endl;
-					cout << "How many days would you like to us the hot tub during your stay? ";
-					cin >> daysForAmen;
-					if (daysForAmen == 1) {
-						cout << "$10 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a1price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 1 night " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 2) {
-						cout << "$20 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a2price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 2 night " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 3) {
-						cout << "$30 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a3price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 3 night " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 4) {
-						cout << "$40 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a4price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 4 night " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 5) {
-						cout << "$50 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a5price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 5 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					break;
-				case 2:
-					cout << endl;
-					cout << "**** Fitness Center *****" << endl;
-					cout << "How many days would you like to us the fitness center during your stay? ";
-					cin >> daysForAmen;
-					if (daysForAmen == 1) {
-						cout << "$10 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a1price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << "  Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 1 night " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-							bookingCustomer.close();
-						}
-
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 2) {
-						cout << "$20 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a2price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 2 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-							bookingCustomer.close();
-						}
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 3) {
-						cout << "$30 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a3price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 3 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-							bookingCustomer.close();
-						}
-
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 4) {
-						cout << "$40 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a4price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 4 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-							bookingCustomer.close();
-						}
-
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 5) {
-						cout << "$50 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p1Price + a5price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 1) {
-								bookingCustomer << " Single King Suite " << endl;
-								bookingCustomer << " Price: $195 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 5 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-							bookingCustomer.close();
-						}
-
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					break;
-				default:
-					break;
-				}
-			}
-			/* End Single Suite Switch Case */
-			else if (cin >> n) {
-				cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-				cout << endl;
-				r.getPayment();
-				cout << endl;
-				cout << "Would you like to go back to home menu? ";
-				if (cin >> y) {
-					customerMenuOptionTwo();
-				}
-				else if (cin >> n) {
-					cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-				}
-			}
-			break;
-			// Double Suite Switch Case 
-		case 2:
-			cout << "You've selected the Double Suite, excellent choice! " << endl;
-			cout << "Would you like you to add on any amentities? " << endl;
-			if (cin >> y) {
-				cout << endl;
-				cout << "**** Hotel Amentities Add Ons ****" << endl;
-				cout << "1. Hot Tub $10 a day, Maximum use 5 days per stay " << endl;
-				cout << "2. Fitness Center $10 a day, Maximum use 5 days per stay " << endl;
-				cout << "Which amentities would you like to add? " << endl;
-				cin >> amentityOption;
-				// Double Suite Amentities Switch Case 
-				switch (amentityOption)
-				{
-				case 1:
-					cout << endl;
-					cout << "**** Hot Tub *****" << endl;
-					cout << "How many days would you like to us the hot tub during your stay? ";
-					cin >> daysForAmen;
-					if (daysForAmen == 1) {
-						cout << "$10 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a1price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 1 night " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 2) {
-						cout << "$20 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a2price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 2 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 3) {
-						cout << "$30 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a3price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 3 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 4) {
-						cout << "$40 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a4price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 4 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 5) {
-						cout << "$50 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a5price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Hot Tub for 5 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					break;
-				case 2:
-					cout << endl;
-					cout << "**** Fitness Center *****" << endl;
-					cout << "How many days would you like to us the fitness center during your stay? ";
-					cin >> daysForAmen;
-					if (daysForAmen == 1) {
-						cout << "$10 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a1price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 1 night " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 2) {
-						cout << "$20 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a2price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 2 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 3) {
-						cout << "$30 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a3price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 3 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 4) {
-						cout << "$40 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a4price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-						cout << endl;
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 4 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					else if (daysForAmen == 5) {
-						cout << "$50 added to your bill" << endl;
-						cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-						cout << endl;
-
-						int total = p2Price + a5price;
-						cout << "Payment Total: $" << total << endl;
-						r.getPayment();
-
-
-						// Adding amentities into file 
-						if (bookingCustomer.is_open()) {
-							bookingCustomer << "            Customer Reservation Details      " << endl;
-							bookingCustomer << " Name: " << customerFirstName << customerLastName << endl;
-							bookingCustomer << " # of Guest During Stay : " << guest << endl;
-							bookingCustomer << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-							bookingCustomer << " Package: " << package << endl;
-							if (package == 2) {
-								bookingCustomer << " Double King Suite " << endl;
-								bookingCustomer << " Price: $155 a night " << endl;
-								bookingCustomer << " Hotel Amentities added: Fitness Center for 5 nights " << endl;
-								bookingCustomer << " Total Price: $" << total << endl;
-							}
-						}
-						cout << endl;
-						cout << "Would you like to go back to home menu? ";
-						if (cin >> y) {
-							customerMenuOptionTwo();
-						}
-						else if (cin >> n) {
-							cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-						}
-					}
-					break;
-				default:
-					break;
-				}
-			}
-			/* End Double Suite Switch Case */
-			else if (cin >> n) {
-				cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-				cout << endl;
-				r.getPayment();
-				cout << endl;
-				cout << "Would you like to go back to home menu? ";
-				if (cin >> y) {
-					customerMenuOptionTwo();
-				}
-				else if (cin >> n) {
-					cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-				}
-			}
-			break;
-		case 3:
-			cout << "You've selected the Deluxe Suite, the best choice! " << endl;
+			cout << "**** " << chosenAddon["AmenityName"] << " *****" << endl;
+			cout << "How many days would you like to use the " << chosenAddon["AmenityName"] << " during your stay? ";
+			cin >> daysForAmen;
+			cout << "$" << stoi(chosenAddon["BaseCost"]) * daysForAmen << " added to your bill" << endl;
 			cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
 			cout << endl;
-			cout << "Payment Total: $" << p3Price << endl;
-			r.getPayment();
 
+			total = stoi(chosenPackage["BaseCost"]) + (stoi(chosenAddon["BaseCost"]) * daysForAmen);
+			cout << "Payment Total: $" << total << endl;
+			r.getPayment();
+			cout << endl;
+
+			// NOTE Save Package NOTE Save reservation
+			hotel.saveReservation(customerID, guest, customerCheckIn, customerCheckOut, chosenPackage["PackageTypeID"], chosenAddon["AddOnID"], daysForAmen, total);
+
+			cout << "Would you like to go back to home menu? ";
+			if (cin >> y) {
+				customerMenuOptionTwo();
+			}
+			else if (cin >> n) {
+				cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
+			}
+		}
+		else if (cin >> n) {
+			cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
+			cout << endl;
+			r.getPayment();
 			cout << endl;
 			cout << "Would you like to go back to home menu? ";
 			if (cin >> y) {
@@ -1028,42 +320,60 @@ public:
 			else if (cin >> n) {
 				cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
 			}
-			break;
-		default:
-			break;
 		}
 	}
+
 	// Cancel Booking Reservations
 	void cancelCustomerReservation() {
 		string y = "yes";
+		int selectedRes = 0;
 		ifstream bookingCustomer;
-		bookingCustomer.open("CustomerReservationBookings.txt");
-		if (bookingCustomer.is_open()) {
-			cout << "            Customer Reservation Details      " << endl;
-			cout << " Name: " << customerFirstName << customerLastName << endl;
-			cout << " # of Guest During Stay : " << guest << endl;
-			cout << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-			cout << " Package: " << package << endl;
-			if (package == 1) {
-				cout << " Single King Suite " << endl;
-				cout << " Price: $195 a night " << endl;
+
+		// Get all reservations for a customer and display them
+		vector<map<string, string>> allReservationInfo = hotel.getReservations(customerID);
+
+		// Room Packages Information 
+		cout << endl;
+		cout << "The Following Room Packages are listed below: " << endl;
+		cout << endl;
+
+		for (int i = 0; i < allReservationInfo.size(); i++)
+		{
+			cout << i + 1 << ". Customer Reservation Details      " << endl;
+			cout << "	Name: " << allReservationInfo[i]["FirstName"] << " " << allReservationInfo[i]["LastName"] << endl;
+			cout << "	# of Guest During Stay : " << allReservationInfo[i]["NumberOfGuests"] << endl;
+			cout << "	Duration of Stay: " << allReservationInfo[i]["CheckInDate"] << " TO " << allReservationInfo[i]["CheckOutDate"] << endl;
+			cout << "	Package: " << allReservationInfo[i]["PackageTypeID"] << endl;
+			cout << "	" << allReservationInfo[i]["PackageName"] << endl;
+			cout << "	Price: $" << allReservationInfo[i]["BaseCost"] << " a night" << endl;
+
+			if (allReservationInfo[i]["AmenityName"] != "") {
+				cout << "	Added Amenities: " << allReservationInfo[i]["AmenityName"] << " for " << allReservationInfo[i]["AddOnDays"] << " days" << endl;
 			}
-			else if (package == 2) {
-				cout << " Double King Suite " << endl;
-				cout << " Price: $155 a night " << endl;
-			}
-			else if (package == 3) {
-				cout << " Deluxe Suite " << endl;
-				cout << " Price: $300 a night " << endl;
-			}
-		}
-		cout << "Would you like to cancel your reservation? ";
-		if (cin >> y) {
-			cout << "Your reservation has been canceled. If you would like to create a new reservation, please go back to the home screen! " << endl;
-			customerMenuOptionTwo();
+
+			cout << "	Total Cost: " << allReservationInfo[i]["TotalCost"] << endl << endl;
 		}
 
+		cout << "Please select the reservation you would like to cancel." << endl;
+		cin >> selectedRes;
+
+		while (selectedRes == 0 || package > allReservationInfo.size())
+		{
+			cout << "Please select a reservation listed above." << endl;
+			cin >> selectedRes;
+		}
+
+		cout << "Would you like to cancel your reservation? ";
+		if (cin >> y) 
+		{
+			map<string, string> chosenReservation = allReservationInfo[selectedRes-1];
+			hotel.cancelReservation(customerID, stoi(chosenReservation["ReservationID"]));
+			cout << "Your reservation has been canceled. If you would like to create a new reservation, please go back to the home screen! " << endl;
+			chosenReservation.clear();
+			customerMenuOptionTwo();
+		}
 	}
+
 	// Customer Looks at reward points 
 	void customerRewardPoints() {
 		int p1Price = 195, p2Price = 155, p3Price = 250;
@@ -1091,87 +401,51 @@ public:
 
 
 	}
+
 	// Customer see hotel amentities
 	void customerHotelAmentities() {
 		int selectedChoice;
 		string y = "yes";
 		string n = "no";
 
+		// Get all reservations for a customer and display them
+		vector<map<string, string>> allAmenities = hotel.getHotelAmenities();
+
 		cout << endl << "***** Mo's Hotels Amentities *****" << endl;
 		cout << "With your stay you have the option to enjoy the following amentities below: " << endl;
-		cout << "1. Pool " << endl;
-		cout << "2. Hot Tub " << endl;
-		cout << "3. Breakfast " << endl;
-		cout << "4. Fitness Center " << endl;
+
+		for (int i = 0; i < allAmenities.size(); i++)
+		{
+			cout << i + 1 << ". " << allAmenities[i]["AmenityName"] << endl;
+		}
+		
 		cout << " If you want more information on each option, please select an option above ";
 		cin >> selectedChoice;
-		for (int i = 0; i < selectedChoice; i++) {
-			switch (selectedChoice)
-			{
-			case 1:
-				cout << endl << "******** OLYMPIC POOL ********" << endl;
-				cout << "Our pool is an olympic size pool and is free to all guest. " << endl;
-				cout << "Located: 2nd Floor " << endl;
-				cout << "To use the pool just scan your room card! " << endl;
-				cout << "Thank you!!!!" << endl;
-				cout << endl;
-				cout << "Would you like to go back to home menu? ";
-				if (cin >> y) {
-					customerMenuOptionTwo();
-				}
-				else if (cin >> n) {
-					cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-				}
-				break;
-			case 2:
-				cout << endl << "******** HOT TUB ********" << endl;
-				cout << "Our hot tubs are included in the Deluxe Suite Package! However we do offer day passes for hotel guest who have NOT selected the deluxe suite. " << endl;
-				cout << "Day Pass Price: $10 a day " << endl;
-				cout << "If you would like to purchase a day pass, please go to reservation page. " << endl;
-				cout << "Thank You!!!" << endl;
-				cout << endl;
-				cout << "Would you like to go back to home menu? ";
-				if (cin >> y) {
-					customerMenuOptionTwo();
-				}
-				else if (cin >> n) {
-					cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-				}
-				break;
-			case 3:
-				cout << endl << "******* Breakfast ********" << endl;
-				cout << " We offer complintary breakfast for our guest 7 days a week. " << endl;
-				cout << "Days: Monday - Sunday" << endl;
-				cout << "Time: " << endl;
-				cout << "Monday - Thursday: 6am - 9am " << endl;
-				cout << "Friday - Sunday: 7am - 10 am " << endl;
-				cout << endl;
-				cout << "Would you like to go back to home menu? ";
-				if (cin >> y) {
-					customerMenuOptionTwo();
-				}
-				else if (cin >> n) {
-					cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-				}
-				break;
-			case 4:
-				cout << endl << "******** Fitness Center ******** " << endl;
-				cout << "Our fitness centers is included in the Deluxe suite package, however day passes are available! " << endl;
-				cout << "Day Pass Price: $10 a day " << endl;
-				cout << "If you would like to purchase a day pass, please go to reservation page. " << endl;
-				cout << "Thank You!!!" << endl;
-				cout << endl;
-				cout << "Would you like to go back to home menu? ";
-				if (cin >> y) {
-					customerMenuOptionTwo();
-				}
-				else if (cin >> n) {
-					cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
-				}
-				break;
-			default:
-				break;
-			}
+
+		while (selectedChoice == 0 || selectedChoice > allAmenities.size())
+		{
+			cout << " If you want more information on each option, please select an option above ";
+			cin >> selectedChoice;
+		}
+
+		map<string, string> selectedAmenity = allAmenities[selectedChoice - 1];
+
+		cout << endl << "******** " << selectedAmenity["AmenityName"] << " ********" << endl;
+		cout << selectedAmenity["AmenityDescription"] << endl;
+		cout << selectedAmenity["Auxiliary1"] << endl;
+		cout << selectedAmenity["Auxiliary2"] << endl;
+		cout << selectedAmenity["Auxiliary3"] << endl;
+		cout << selectedAmenity["Auxiliary4"] << endl;
+		cout << selectedAmenity["Auxiliary5"] << endl;
+
+		cout << "Thank you!!!!" << endl;
+		cout << endl;
+		cout << "Would you like to go back to home menu? ";
+		if (cin >> y) {
+			customerMenuOptionTwo();
+		}
+		else if (cin >> n) {
+			cout << "Thank you for choicing MO's Hotels, We look forward to serving you in the future! " << endl;
 		}
 	}
 };

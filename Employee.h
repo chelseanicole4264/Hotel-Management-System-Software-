@@ -9,6 +9,8 @@ Purpose: Employee Class for Hotel System
 #include<iostream>
 #include <string>
 #include <fstream>
+#include "Database.h"
+
 using namespace std;
 class employeeClass
 {
@@ -21,6 +23,7 @@ private:
 	string ePassword;
 	int eUserIDSize;
 	int ePasswordSize;
+	HotelDB hotel;
 
 public:
 // Employee Menu 
@@ -50,8 +53,6 @@ public:
 
 // Employee Create Account 
 	void employeeCreateAccount() {
-		ofstream eAccountFile;
-		eAccountFile.open("EmployeeAccount.txt");
 	// Employee Enters Account Info 
 		cout << " Welcome to Mo's Hotel! " << endl; 
 		cout << "For all new employess, enter the following information below..." << endl;
@@ -79,20 +80,18 @@ public:
 			cin >> ePassword;
 		}
 	// Employee Account File 
-		if (eAccountFile.is_open()) {
-			eAccountFile << "        Employee Account Details" << endl;
-			eAccountFile << " Name: " << eFirstName << eLastName << endl;
-			eAccountFile << "User ID: " << eUserID << endl;
-			eAccountFile << "Password: " << ePassword << endl; 
-			eAccountFile.close();
+
+		hotel.saveEmployeeData(eUserID, ePassword, eFirstName, eLastName);
+
+		if (hotel.employeeExists())
+		{
 			cout << "Your Account Information has been saved! " << endl;
 			cout << "To proceed, please LOGIN! " << endl;
-			cout << endl;
 		}
-		else {
-			cout << "Account information countn't be saved, please try again! " << endl; 
+		else 
+		{
+			cout << "Account information countn't be saved, please try again! " << endl;
 		}
-		eAccountFile.close();
 		employeeLogin();
 	}
 
