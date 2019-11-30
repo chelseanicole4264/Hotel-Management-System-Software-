@@ -24,7 +24,104 @@ private:
 	int eUserIDSize;
 	int ePasswordSize;
 	HotelDB hotel;
+	void getEmployeeData(string& userID, string& password, string& firstName, string& lastName)
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			MYSQL_FIELD *fields;
+			int qstate;
+			//hasEmployeeData = false;
+			MYSQL* conn;
+			conn = mysql_init(0);
+			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
 
+			// Create a dictionary to house the data we will retrieve from the database
+			map <string, string> eInfo = {
+				{"EmployeeID"   , ""},
+				{"FirstName"	, ""},
+				{"LastName"		, ""},
+				{"UserID"	    , ""},
+				{"Password"	    , ""},
+			};
+
+			if (conn)
+			{
+				// Call the stored procedure from the database
+				string query = "CALL GetEmployeeData('" + userID + "', '" + password + "')";
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+
+					int numOfFields = mysql_num_fields(res);
+					fields = mysql_fetch_fields(res);
+
+					while (row = mysql_fetch_row(res))
+					{
+						for (int i = 0; i < numOfFields; i++)
+						{
+							eInfo[fields[i].name] = row[i];
+						}
+					}
+
+					firstName = eInfo["FirstName"];
+					lastName = eInfo["LastName"];
+					userID = eInfo["UserID"];
+					password = eInfo["Password"];
+
+					//hasEmployeeData = true;
+					eInfo.clear();
+				}
+				else
+				{
+					cout << "Unable to retrieve your account information." << endl;
+				}
+			}
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
+		}
+	}
+
+	void saveEmployeeData(string userID, string password, string firstName, string lastName)
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			int qstate;
+			MYSQL* conn;
+			conn = mysql_init(0);
+			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
+
+
+			if (conn)
+			{
+				string query = "CALL SaveEmployeeData('" + firstName + "', '" + lastName + "', '" + userID + "', '" + password + "')";
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+					//employeeSaved = true;
+				}
+				else
+				{
+					cout << "Unable to create your account." << endl;
+				}
+			}
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
+		}
+	}
 public:
 // Employee Menu 
 	void employeeMenu() {
@@ -81,7 +178,7 @@ public:
 		}
 	// Employee Account File 
 
-		hotel.saveEmployeeData(eUserID, ePassword, eFirstName, eLastName);
+		saveEmployeeData(eUserID, ePassword, eFirstName, eLastName);
 
 		if (hotel.employeeExists())
 		{

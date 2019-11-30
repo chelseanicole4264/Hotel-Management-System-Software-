@@ -1,25 +1,25 @@
 ﻿  main.cpp
-c:\users\csamano\documents\school\hotel-management-system-software--master\database.h(95): warning C4101: 'row': unreferenced local variable
-c:\users\csamano\documents\school\hotel-management-system-software--master\database.h(188): warning C4101: 'row': unreferenced local variable
-c:\users\csamano\documents\school\hotel-management-system-software--master\database.h(220): warning C4101: 'row': unreferenced local variable
-c:\users\csamano\documents\school\hotel-management-system-software--master\database.h(256): warning C4101: 'row': unreferenced local variable
-c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(65): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(70): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(76): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(103): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(107): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(111): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\employee.h(115): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(59): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(64): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(69): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(135): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(139): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(144): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\csamano\documents\school\hotel-management-system-software--master\customer.h(148): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(96): warning C4101: 'row': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(162): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(167): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(173): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(200): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(204): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(208): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(212): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(120): warning C4101: 'row': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(155): warning C4101: 'row': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(194): warning C4101: 'row': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(243): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(248): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(253): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(319): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(323): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(328): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(332): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   Generating code
-  3 of 552 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
+  10 of 552 functions ( 1.8%) were compiled, the rest were copied from previous compilation.
+    2 functions were new in current compilation
     3 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
-  CIS376Project.vcxproj -> C:\Users\csamano\Documents\School\Hotel-Management-System-Software--master\x64\Release\CIS376Project.exe
+  CIS376Project.vcxproj -> C:\Users\csamano\Documents\School\Hotel-Management-System-Software--Database-Setup\x64\Release\CIS376Project.exe

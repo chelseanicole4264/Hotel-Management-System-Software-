@@ -37,6 +37,195 @@ private:
 
 	// Customer Reward Points Datatypes
 
+	#pragma region Database Calls
+	
+	void getCustomerData()
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			MYSQL_FIELD *fields;
+			int qstate;
+			//hasCustomerData = false;
+			MYSQL* conn;
+			conn = mysql_init(0);
+			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
+
+			// Create a dictionary to house the data we will retrieve from the database
+			map <string, string> cInfo = {
+				{"CustomerID"   , ""},
+				{"FirstName"	, ""},
+				{"LastName"		, ""},
+				{"UserName"	    , ""},
+				{"Password"	    , ""},
+				{"PhoneNumber"  , ""},
+				{"EmailAddress" , ""},
+				{"RewardsPoints", ""}
+			};
+
+			if (conn)
+			{
+				// Call the stored procedure from the database
+				string query = "CALL GetCustomerData('" + userName + "', '" + password + "')";
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+
+					int num_Fields = mysql_num_fields(res);
+					fields = mysql_fetch_fields(res);
+
+					while (row = mysql_fetch_row(res))
+					{
+						for (int i = 0; i < num_Fields; i++)
+						{
+							if (row[i] != nullptr)
+							{
+								cInfo[fields[i].name] = row[i];
+							}
+						}
+					}
+
+					// Set the data
+					customerID = stoi(cInfo["CustomerID"]);
+					firstName = cInfo["FirstName"];
+					lastName = cInfo["LastName"];
+					userName = cInfo["UserName"];
+					password = cInfo["Password"];
+					phoneNumber = cInfo["PhoneNumber"];
+					emailAddress = cInfo["EmailAddress"];
+					rewards = stoi(cInfo["RewardsPoints"]);
+
+					//hasCustomerData = true;
+					cInfo.clear();
+				}
+				else
+				{
+					cout << "Unable to retrieve your account information." << endl;
+				}
+			}
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
+		}
+	}
+
+	void saveCustomerData(string userName, string password, string firstName, string lastName, string emailAddress, string phoneNumber)
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			int qstate;
+			//customerSaved = false;
+			MYSQL* conn;
+			conn = mysql_init(0);
+			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
+
+			if (conn)
+			{
+				string query = "CALL SaveCustomerData('" + firstName + "', '" + lastName + "', '" + userName + "', '" + password + "', '" + phoneNumber + "', '" + emailAddress + "')";
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+					//customerSaved = true;
+				}
+				else
+				{
+					cout << "Unable to create your account." << endl;
+				}
+			}
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
+		}
+	}
+
+	#pragma endregion
+
+	// move to the reservation class
+	void saveReservation(int customerID, int numGuests, string checkInDate, string checkOutDate, string packageTypeID, string addonID, int addonDays, int totalCost)
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			int qstate;
+			//reservationBooked = false;
+			MYSQL* conn;
+			conn = mysql_init(0);
+			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
+
+//			hotel.startConnection();
+
+			if (conn)
+			{
+				string query = "CALL SaveReservation(" + to_string(customerID) + ", " + to_string(numGuests) + ", '" + checkInDate + "', '" + checkOutDate
+					+ "', " + packageTypeID + " ," + addonID + ", " + to_string(addonDays) + ", " + to_string(totalCost) + ")";
+
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+					//reservationBooked = true;
+				}
+				else
+				{
+					cout << "Unable to book your reservation." << endl;
+				}
+			}
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
+		}
+	}
+
+	void cancelReservation(int customerID, int reservationID)
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			int qstate;
+			MYSQL* conn;
+			conn = mysql_init(0);
+			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
+
+//			hotel.startConnection();
+
+			if (conn)
+			{
+				string query = "CALL CancelReservation(" + to_string(customerID) + ", " + to_string(reservationID) + ")";
+
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+				}
+				else
+				{
+					cout << "Unable to cancel your reservation." << endl;
+				}
+			}
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
+		}
+	}
 
 public: 
 /* CUSTOMER ACCOUNT */
@@ -74,7 +263,7 @@ public:
 		}
 
 	// Save Customer Account Info 
-		hotel.saveCustomerData(userName, password, firstName, lastName, emailAddress, phoneNumber);
+		saveCustomerData(userName, password, firstName, lastName, emailAddress, phoneNumber);
 		
 		if (hotel.customerExists())
 		{
@@ -148,7 +337,7 @@ public:
 			cPasswordSize = password.length();
 		}
 
-		hotel.getCustomerData(customerID, userName, password, firstName, lastName, emailAddress, phoneNumber, rewards);
+		getCustomerData();
 		customerMenuOptionTwo();
 	}
 // Customer Account File Information
@@ -259,9 +448,9 @@ public:
 			cin >> package;
 		}
 
-		map<string, string> chosenPackage = allPackageInfo[package - 1];
+		map<string, string> selectedPackage = allPackageInfo[package - 1];
 
-		cout << "You've selected the " << chosenPackage["PackageName"] << ", excellent choice! " << endl;
+		cout << "You've selected the " << selectedPackage["PackageName"] << ", excellent choice! " << endl;
 		cout << endl;
 		cout << "Would you like you to add on any amentities? " << endl << endl;
 
@@ -282,23 +471,23 @@ public:
 				cin >> amentityOption;
 			}
 
-			map<string, string> chosenAddon = allAddonInfo[amentityOption - 1];
+			map<string, string> selectedAddon = allAddonInfo[amentityOption - 1];
 
 			cout << endl;
-			cout << "**** " << chosenAddon["AmenityName"] << " *****" << endl;
-			cout << "How many days would you like to use the " << chosenAddon["AmenityName"] << " during your stay? ";
+			cout << "**** " << selectedAddon["AmenityName"] << " *****" << endl;
+			cout << "How many days would you like to use the " << selectedAddon["AmenityName"] << " during your stay? ";
 			cin >> daysForAmen;
-			cout << "$" << stoi(chosenAddon["BaseCost"]) * daysForAmen << " added to your bill" << endl;
+			cout << "$" << stoi(selectedAddon["BaseCost"]) * daysForAmen << " added to your bill" << endl;
 			cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
 			cout << endl;
 
-			total = stoi(chosenPackage["BaseCost"]) + (stoi(chosenAddon["BaseCost"]) * daysForAmen);
+			total = stoi(selectedPackage["BaseCost"]) + (stoi(selectedAddon["BaseCost"]) * daysForAmen);
 			cout << "Payment Total: $" << total << endl;
 			r.getPayment();
 			cout << endl;
 
 			// NOTE Save Package NOTE Save reservation
-			hotel.saveReservation(customerID, guest, customerCheckIn, customerCheckOut, chosenPackage["PackageTypeID"], chosenAddon["AddOnID"], daysForAmen, total);
+			saveReservation(customerID, guest, customerCheckIn, customerCheckOut, selectedPackage["PackageTypeID"], selectedAddon["AddOnID"], daysForAmen, total);
 
 			cout << "Would you like to go back to home menu? ";
 			if (cin >> y) {
@@ -366,10 +555,10 @@ public:
 		cout << "Would you like to cancel your reservation? ";
 		if (cin >> y) 
 		{
-			map<string, string> chosenReservation = allReservationInfo[selectedRes-1];
-			hotel.cancelReservation(customerID, stoi(chosenReservation["ReservationID"]));
+			map<string, string> selectedReservation = allReservationInfo[selectedRes-1];
+			cancelReservation(customerID, stoi(selectedReservation["ReservationID"]));
 			cout << "Your reservation has been canceled. If you would like to create a new reservation, please go back to the home screen! " << endl;
-			chosenReservation.clear();
+			selectedReservation.clear();
 			customerMenuOptionTwo();
 		}
 	}
