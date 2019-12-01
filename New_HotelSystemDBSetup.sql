@@ -63,6 +63,12 @@ CREATE TABLE `reservation` (
   CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`PackageID`) REFERENCES `package` (`PackageID`) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+CREATE TABLE `rewardBenefits` (
+  `BenefitID` int(11) NOT NULL AUTO_INCREMENT,
+  `BenefitName` varchar(255) DEFAULT NULL,
+  `BenefitDescription` varchar(255) DEFAULT NULL,
+  `RequiredRewards` int DEFAULT NULL,
+  PRIMARY KEY (`BenefitID`));
 
 -- START INSERT TABLES SECTION-----------------------------
 	INSERT IGNORE INTO Employee (FirstName, LastName, UserId, Password) VALUES ( "Cindy", "0",	 1, "pass0");
@@ -86,8 +92,9 @@ CREATE TABLE `reservation` (
     Set @PackageID = LAST_INSERT_ID();
     
     INSERT IGNORE INTO Reservation (CustomerID, PackageID, NumberOfGuests, CheckInDate, CheckOutDate) VALUES (@CustomerID, @PackageID, 4, "10/27/2019", "11/04/2019");
-
-
+	
+    INSERT IGNORE INTO RewardBenefits (BenefitName, BenefitDescription, RequiredRewards) VALUES ("Free Stay", "1 free day at hotel", 300);
+ 
 -- START Stored Procedures Section-----------------------------
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `CancelReservation`(
@@ -241,6 +248,20 @@ BEGIN
 
 END$$
 DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetEligibleBenefits`()
+BEGIN
+SELECT
+	BenefitID,
+    BenefitName,
+    BeneFitDescription,
+    RequiredRewards
+FROM RewardBenefits;
+END$$
+DELIMITER ;
+
+
 
 
 

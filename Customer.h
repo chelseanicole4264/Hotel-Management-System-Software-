@@ -3,6 +3,7 @@ Purpose: Customer Class for Hotel System
 -- This class will include account information, reservation, and reward system all for the customer 
 */
 
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -16,7 +17,7 @@ private:
 	int cUsernameSize;
 	int cPasswordSize;
 	// Customer Account Datatypes 
-	int customerID = 0; /* Retrieve from db*/
+	int customerID = 0;
 	int rewards = 0; 
 	string firstName = " ";
 	string lastName = " "; 
@@ -31,210 +32,55 @@ private:
 	int package, guest;
 	string  y = "yes";
 	string n = "no";
-	ofstream bookingCustomer;
 	string customerCheckIn = " / / /", customerCheckOut = " / / /";
 	HotelDB  hotel; 
+	reservationClass res;
 
-	// Customer Reward Points Datatypes
+	bool customerDataLoaded = false;
+	bool customerSaved = false;
 
 	#pragma region Database Calls
-	
 	void getCustomerData()
 	{
-		try
-		{
-			MYSQL_RES * res;
-			MYSQL_ROW row;
-			MYSQL_FIELD *fields;
-			int qstate;
-			//hasCustomerData = false;
-			MYSQL* conn;
-			conn = mysql_init(0);
-			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
+		string query = "CALL GetCustomerData('" + userName + "', '" + password + "')";
+		map <string, string> cInfo = hotel.getCustomerData(query);
 
-			// Create a dictionary to house the data we will retrieve from the database
-			map <string, string> cInfo = {
-				{"CustomerID"   , ""},
-				{"FirstName"	, ""},
-				{"LastName"		, ""},
-				{"UserName"	    , ""},
-				{"Password"	    , ""},
-				{"PhoneNumber"  , ""},
-				{"EmailAddress" , ""},
-				{"RewardsPoints", ""}
-			};
-
-			if (conn)
-			{
-				// Call the stored procedure from the database
-				string query = "CALL GetCustomerData('" + userName + "', '" + password + "')";
-				const char* q = query.c_str();
-				qstate = mysql_query(conn, q);
-
-				if (!qstate)
-				{
-					res = mysql_store_result(conn);
-
-					int num_Fields = mysql_num_fields(res);
-					fields = mysql_fetch_fields(res);
-
-					while (row = mysql_fetch_row(res))
-					{
-						for (int i = 0; i < num_Fields; i++)
-						{
-							if (row[i] != nullptr)
-							{
-								cInfo[fields[i].name] = row[i];
-							}
-						}
-					}
-
-					// Set the data
-					customerID = stoi(cInfo["CustomerID"]);
-					firstName = cInfo["FirstName"];
-					lastName = cInfo["LastName"];
-					userName = cInfo["UserName"];
-					password = cInfo["Password"];
-					phoneNumber = cInfo["PhoneNumber"];
-					emailAddress = cInfo["EmailAddress"];
-					rewards = stoi(cInfo["RewardsPoints"]);
-
-					//hasCustomerData = true;
-					cInfo.clear();
-				}
-				else
-				{
-					cout << "Unable to retrieve your account information." << endl;
-				}
-			}
+		// Set the data
+		if (cInfo.size() != 0) {
+			customerID = stoi(cInfo["CustomerID"]);
+			firstName = cInfo["FirstName"];
+			lastName = cInfo["LastName"];
+			userName = cInfo["UserName"];
+			password = cInfo["Password"];
+			phoneNumber = cInfo["PhoneNumber"];
+			emailAddress = cInfo["EmailAddress"];
+			rewards = stoi(cInfo["RewardsPoints"]);
+			customerDataLoaded = true;
+			cInfo.clear();
 		}
-		catch (exception e)
+		else
 		{
-			throw exception("Error connecting to our database.");
+			customerDataLoaded = false;
 		}
 	}
 
-	void saveCustomerData(string userName, string password, string firstName, string lastName, string emailAddress, string phoneNumber)
+	void saveCustomerData(string cUserName, string cPassword, string cFirstName, string cLastName, string cEmailAddress, string cPhoneNumber)
 	{
-		try
-		{
-			MYSQL_RES * res;
-			MYSQL_ROW row;
-			int qstate;
-			//customerSaved = false;
-			MYSQL* conn;
-			conn = mysql_init(0);
-			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
-
-			if (conn)
-			{
-				string query = "CALL SaveCustomerData('" + firstName + "', '" + lastName + "', '" + userName + "', '" + password + "', '" + phoneNumber + "', '" + emailAddress + "')";
-				const char* q = query.c_str();
-				qstate = mysql_query(conn, q);
-
-				if (!qstate)
-				{
-					res = mysql_store_result(conn);
-					//customerSaved = true;
-				}
-				else
-				{
-					cout << "Unable to create your account." << endl;
-				}
-			}
-		}
-		catch (exception e)
-		{
-			throw exception("Error connecting to our database.");
-		}
+		string query = "CALL SaveCustomerData('" + cFirstName + "', '" + cLastName + "', '" + cUserName + "', '" + cPassword + "', '" + cPhoneNumber + "', '" + cEmailAddress + "')";
+		customerSaved = hotel.saveToDatabase(query);		
 	}
 
 	#pragma endregion
 
-	// move to the reservation class
-	void saveReservation(int customerID, int numGuests, string checkInDate, string checkOutDate, string packageTypeID, string addonID, int addonDays, int totalCost)
-	{
-		try
-		{
-			MYSQL_RES * res;
-			MYSQL_ROW row;
-			int qstate;
-			//reservationBooked = false;
-			MYSQL* conn;
-			conn = mysql_init(0);
-			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
-
-//			hotel.startConnection();
-
-			if (conn)
-			{
-				string query = "CALL SaveReservation(" + to_string(customerID) + ", " + to_string(numGuests) + ", '" + checkInDate + "', '" + checkOutDate
-					+ "', " + packageTypeID + " ," + addonID + ", " + to_string(addonDays) + ", " + to_string(totalCost) + ")";
-
-				const char* q = query.c_str();
-				qstate = mysql_query(conn, q);
-
-				if (!qstate)
-				{
-					res = mysql_store_result(conn);
-					//reservationBooked = true;
-				}
-				else
-				{
-					cout << "Unable to book your reservation." << endl;
-				}
-			}
-		}
-		catch (exception e)
-		{
-			throw exception("Error connecting to our database.");
-		}
-	}
-
-	void cancelReservation(int customerID, int reservationID)
-	{
-		try
-		{
-			MYSQL_RES * res;
-			MYSQL_ROW row;
-			int qstate;
-			MYSQL* conn;
-			conn = mysql_init(0);
-			conn = mysql_real_connect(conn, "localhost", "root", "MySQLPassword1", "HotelSystemDB", 3306, NULL, 0); // use your localhost password
-
-//			hotel.startConnection();
-
-			if (conn)
-			{
-				string query = "CALL CancelReservation(" + to_string(customerID) + ", " + to_string(reservationID) + ")";
-
-				const char* q = query.c_str();
-				qstate = mysql_query(conn, q);
-
-				if (!qstate)
-				{
-					res = mysql_store_result(conn);
-				}
-				else
-				{
-					cout << "Unable to cancel your reservation." << endl;
-				}
-			}
-		}
-		catch (exception e)
-		{
-			throw exception("Error connecting to our database.");
-		}
-	}
 
 public: 
 /* CUSTOMER ACCOUNT */
 
 // Customer Account Information Function
-	void customerCreateAccount() {
-
-	//Customer Enters Account Information 
-		cout << "To create your account, please enter the following details below: " << endl; 
+	void customerCreateAccount() 
+	{
+		//Customer Enters Account Information 
+		cout << "To create your account, please enter the following details below: " << endl;
 		cout << "Name: ";
 		cin >> firstName >> lastName;
 		cout << "Email: ";
@@ -244,39 +90,42 @@ public:
 		cout << "Username (Must be at least 8 characters) : ";
 		cin >> userName;
 		cout << endl;
-	// Checking the size of the username 
+
+		// Checking the size of the username 
 		cUsernameSize = userName.length();
 		while (cUsernameSize > 8 || cUsernameSize < 8) {
-			cout << "Please make sure your username is at least 8 characters long" << endl; 
+			cout << "Please make sure your username is at least 8 characters long" << endl;
 			cout << "Username: " << endl;
 			cin >> userName;
 			cUsernameSize = userName.length();
 		}
-		cout << "Password (Must be at least 6 characters): "; 
+		cout << "Password (Must be at least 6 characters): ";
 		cin >> password;
-		cout << endl; 
+		cout << endl;
 		cPasswordSize = password.length();
-		while (cPasswordSize > 6 || cPasswordSize < 6){
+		while (cPasswordSize > 6 || cPasswordSize < 6) {
 			cout << "Please make sure your password is at least 6 characters long!! ";
 			cout << "Password: ";
 			cin >> password;
 		}
 
-	// Save Customer Account Info 
+		// Save Customer Account Info 
 		saveCustomerData(userName, password, firstName, lastName, emailAddress, phoneNumber);
-		
-		if (hotel.customerExists())
+
+		if (customerSaved)
 		{
 			cout << "You're Account Information has been saved! " << endl;
 			cout << "To Proceed, Please Login! " << endl;
 		}
-		else 
-		{	
+		else
+		{
 			cout << "Account information could not be saved! Please try again! " << endl;
+			return; // NOTE: Test!
 		}
 
-		customerLogin(); 
+		customerLogin();
 	}
+
 // Customer Menu Option for Login
 	void customerMenuOptionTwo() {
 		int customerChoice;
@@ -322,15 +171,18 @@ public:
 		cin >> userName;
 		cout << endl;
 		cUsernameSize = userName.length();
+
 		while (cUsernameSize > 8 || cUsernameSize < 8) {
 			cout << "Remember your username has to be 8 characters long. Please try again!" << endl;
 			cin >> userName;
 			cUsernameSize = userName.length();
 		}
+
 		cout << "Password: " << endl;
 		cin >> password;
 		cout << endl;
 		cPasswordSize = password.length();
+
 		while (cPasswordSize > 6 || cPasswordSize < 6) {
 			cout << "Remember your username has to be 8 characters long. Please try again!" << endl;
 			cin >> password;
@@ -338,7 +190,17 @@ public:
 		}
 
 		getCustomerData();
-		customerMenuOptionTwo();
+
+		if (customerDataLoaded) 
+		{
+			customerMenuOptionTwo();
+		}
+		else
+		{
+			cout << "Unable to retrieve account information. Please try again!" << endl;
+			return; // NOTE: Test!
+		}
+		
 	}
 // Customer Account File Information
 
@@ -458,6 +320,7 @@ public:
 			cout << "**** Hotel Amentities Add Ons ****" << endl;
 			vector<map<string, string>> allAddonInfo = hotel.getAddons();
 
+			// Display all available addons
 			for (int i = 0; i < allAddonInfo.size(); i++){
 				cout << i + 1 << ". " << allAddonInfo[i]["AmenityName"] << " $" << allAddonInfo[i]["BaseCost"] << " a day," << allAddonInfo[i]["AmenityDescription"] << endl;
 			}
@@ -487,7 +350,7 @@ public:
 			cout << endl;
 
 			// NOTE Save Package NOTE Save reservation
-			saveReservation(customerID, guest, customerCheckIn, customerCheckOut, selectedPackage["PackageTypeID"], selectedAddon["AddOnID"], daysForAmen, total);
+			res.saveReservation(customerID, guest, customerCheckIn, customerCheckOut, selectedPackage["PackageTypeID"], selectedAddon["AddOnID"], daysForAmen, total);
 
 			cout << "Would you like to go back to home menu? ";
 			if (cin >> y) {
@@ -516,8 +379,7 @@ public:
 	void cancelCustomerReservation() {
 		string y = "yes";
 		int selectedRes = 0;
-		ifstream bookingCustomer;
-
+		
 		// Get all reservations for a customer and display them
 		vector<map<string, string>> allReservationInfo = hotel.getReservations(customerID);
 
@@ -539,7 +401,6 @@ public:
 			if (allReservationInfo[i]["AmenityName"] != "") {
 				cout << "	Added Amenities: " << allReservationInfo[i]["AmenityName"] << " for " << allReservationInfo[i]["AddOnDays"] << " days" << endl;
 			}
-
 			cout << "	Total Cost: " << allReservationInfo[i]["TotalCost"] << endl << endl;
 		}
 
@@ -556,7 +417,7 @@ public:
 		if (cin >> y) 
 		{
 			map<string, string> selectedReservation = allReservationInfo[selectedRes-1];
-			cancelReservation(customerID, stoi(selectedReservation["ReservationID"]));
+			res.cancelReservation(customerID, stoi(selectedReservation["ReservationID"]));
 			cout << "Your reservation has been canceled. If you would like to create a new reservation, please go back to the home screen! " << endl;
 			selectedReservation.clear();
 			customerMenuOptionTwo();
@@ -565,30 +426,110 @@ public:
 
 	// Customer Looks at reward points 
 	void customerRewardPoints() {
+
 		int p1Price = 195, p2Price = 155, p3Price = 250;
 		int a1price = 10, a2price = 20, a3price = 30, a4price = 40, a5price = 60;
-		ifstream bookingCustomer;
-		bookingCustomer.open("CustomerReservationBookings.txt");
-		if (bookingCustomer.is_open()) {
-			cout << "            Customer Reservation Details      " << endl;
-			cout << " Name: " << customerFirstName << customerLastName << endl;
-			cout << " # of Guest During Stay : " << guest << endl;
-			cout << " Duration of Stay: " << customerCheckIn << " TO " << customerCheckOut << endl;
-			cout << " Package: " << package << endl;
-			if (package == 1) {
-				cout << " Single King Suite " << endl;
-				cout << " Price: $195 a night " << endl;
-				cout << " Hotel Amentities added: Hot Tub for 3 night " << endl;
-				int total = p1Price + a1price;
-				cout << " Total Price: $" << total << endl;
-			}
-			bookingCustomer.close();
+		int selectedMenuItem = 0;
+		vector<map<string, string>> eligibleRewards;
+		map<string, string> selectedReward;
+		int currentRewards = 0;
+		int requiredRewards = 0;
+		int adjustedRewards = 0;
+		int reward = 0;
+
+
+		/*
+			NOTE: when assigning points to a customer we will need to get the # of nights a customer stays (NOTE: Add errror handling for non-existent dates)
+		*/
+
+		if (!customerDataLoaded)
+		{
+			cout << "Unable to retrieve Rewards. Please try again later..." << endl;
+			return;
 		}
-		cout << "The Reward Points are based on the price of the room. If you stay over 2 nights you get double the reward points for 2 nights. " << endl;
-		cout << "Reward Points amount = 195 " << endl;
-		cout << "It'll be added to your account! " << endl;
 
+		// Display customer name and rewards
+		cout << endl << endl << "            Customer Rewards Details      " << endl;
+		cout << "Name: " << firstName << " " << lastName << endl;
+		cout << "Current Rewards Total: " << rewards << endl << endl;
 
+		cout << "Please select an option below or select '0' to return to the main menu:" << endl;
+		cout << " 1. Redeem Rewards" << endl;
+		cout << " 2. View Rewards History" << endl;
+		cout << " 3. How Rewards Work" << endl;
+
+		cin >> selectedMenuItem;
+
+		//while (selectedMenuItem < 0 || selectedMenuItem > 3)
+		//{
+		//	if (selectedMenuItem == 0) {
+		//		cout << "Returning to Main Menu..." << endl << endl;
+		//		return;
+		//	}
+		//}
+
+		switch (selectedMenuItem)
+		{
+		case 1:
+			// RedeemRewards
+
+			// Get Eligible Rewards
+			eligibleRewards = hotel.getEligibleRewards(customerID);
+
+			if (eligibleRewards.size() == 0) {
+				cout << "Whoops! Looks like you are not eliglble for rewards at this time. Please make a reservation to gather more points!" << endl << endl;
+			}
+
+			// Display Eligible Rewards
+			cout << "Please Select the reward you would like to redeem." << endl << endl;
+			for (int i = 0; i < eligibleRewards.size(); i++)
+			{
+				cout << i + 1 << ". Reward : " << eligibleRewards[i]["RewardName"] << endl;
+				cout << "   Details : " << eligibleRewards[i]["RewardDescription"] << endl;
+				cout << "   Cost : " << eligibleRewards[i]["RequiredRewards"] << "pts" << endl << endl;
+			}
+
+			cin >> reward;
+
+			while (reward == 0 || reward < eligibleRewards.size())
+			{
+				cout << "Please Select the reward you would like to redeem." << endl << endl;
+				cin >> reward;
+			}
+
+			// Get the selected Reward
+			selectedReward = eligibleRewards[reward - 1];
+
+			// Adjust Rewards Points
+			currentRewards = rewards;
+			requiredRewards = stoi(selectedReward["RequiredRewards"]);
+			adjustedRewards = currentRewards - requiredRewards;
+
+			// Update customers total rewards
+			hotel.updateRewards(customerID, adjustedRewards);
+
+			// Apply reward to Reservation and adjust pricing(if any)
+			//cout << "Reward Points amount = 195 " << endl;
+			//cout << "It'll be added to your account! " << endl;
+
+			// Add Rewards Transaction to the Rewards log
+
+			break;
+		case 2:
+			// View Rewards History (would have to create separate table to house all the rewards transactions)
+			break;
+		case 3:
+			// How Rewards Work
+			cout << "The Reward Points are based on the price of the room. If you stay over 2 nights you get double the reward points for 2 nights. " << endl;
+			cout << "Points are awarded each time a customer schedules a reservation." << endl << endl;
+			//cout << "They are based on the # of nights stayed during a reservation" << endl << endl;
+			cout << "	1 night = 3 points" << endl;
+			cout << "	3 nights = 25 points" << endl;
+			cout << "	12 nights = 300 points = 1 free day at hotel" << endl;
+			break;
+		default:
+			break;
+		}
 	}
 
 	// Customer see hotel amentities

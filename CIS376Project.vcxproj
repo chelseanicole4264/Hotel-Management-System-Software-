@@ -132,6 +132,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConnectionProperties.h" />
     <ClInclude Include="Customer.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="Employee.h" />

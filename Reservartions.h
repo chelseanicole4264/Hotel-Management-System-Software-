@@ -13,6 +13,8 @@ private:
 	string month, day, year, monthOut, dayOut, yearOut;
 	string firstNameRewards, lastNameRewards, nameRewards;
 	string checkOutMonth, checkOutday, checkOutYear;
+	HotelDB hotel;
+
 
 public: 
 // Check In Function 
@@ -118,5 +120,26 @@ public:
 		cout << "Enter the credit card number: ";
 		cin >> cardNumber;
 	}
+
+	bool reservationSaved = false;
+	bool reservationCancelled = false;
+
+	#pragma region Database Calls
+
+	void saveReservation(int customerID, int numGuests, string checkInDate, string checkOutDate, string packageTypeID, string addonID, int addonDays, int totalCost)
+	{
+		string query = "CALL SaveReservation(" + to_string(customerID) + ", " + to_string(numGuests) + ", '" + checkInDate + "', '" + checkOutDate
+			+ "', " + packageTypeID + " ," + addonID + ", " + to_string(addonDays) + ", " + to_string(totalCost) + ")";
+
+		reservationSaved = hotel.saveToDatabase(query);
+	}
+
+	void cancelReservation(int customerID, int reservationID)
+	{
+		string query = "CALL CancelReservation(" + to_string(customerID) + ", " + to_string(reservationID) + ")";
+		reservationCancelled = hotel.saveToDatabase(query);
+	}
+
+	#pragma endregion
 
 };

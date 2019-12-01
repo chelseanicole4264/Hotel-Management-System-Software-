@@ -180,7 +180,7 @@ public:
 
 		saveEmployeeData(eUserID, ePassword, eFirstName, eLastName);
 
-		if (hotel.employeeExists())
+		/*if (hotel.employeeExists())
 		{
 			cout << "Your Account Information has been saved! " << endl;
 			cout << "To proceed, please LOGIN! " << endl;
@@ -188,7 +188,7 @@ public:
 		else 
 		{
 			cout << "Account information countn't be saved, please try again! " << endl;
-		}
+		}*/
 		employeeLogin();
 	}
 
