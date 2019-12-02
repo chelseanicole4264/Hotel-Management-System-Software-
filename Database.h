@@ -17,20 +17,9 @@ public:
 			MYSQL_RES * res;
 			MYSQL_ROW row;
 			MYSQL_FIELD *fields;
+			map <string, string> cInfo;
 			int qstate;
-
-			// Create a dictionary to house the data we will retrieve from the database
-			map <string, string> cInfo = {
-				{"CustomerID"   , ""},
-				{"FirstName"	, ""},
-				{"LastName"		, ""},
-				{"UserName"	    , ""},
-				{"Password"	    , ""},
-				{"PhoneNumber"  , ""},
-				{"EmailAddress" , ""},
-				{"RewardsPoints", ""}
-			};
-
+			
 			startConnection();
 
 			if (conn)
@@ -48,6 +37,19 @@ public:
 
 					while (row = mysql_fetch_row(res))
 					{
+
+						// Create a dictionary to house the data we will retrieve from the database
+						cInfo = {
+							{"CustomerID"   , ""},
+							{"FirstName"	, ""},
+							{"LastName"		, ""},
+							{"UserName"	    , ""},
+							{"Password"	    , ""},
+							{"PhoneNumber"  , ""},
+							{"EmailAddress" , ""},
+							{"RewardsPoints", ""}
+						};
+
 						for (int i = 0; i < num_Fields; i++)
 						{
 							if (row[i] != nullptr)
@@ -58,12 +60,64 @@ public:
 					}
 				}
 			}
-
 			return cInfo;
 		}
 		catch (exception e)
 		{
 			throw exception("Error connecting to database.");
+		}
+	}
+	
+	map <string, string> getEmployeeData(string query)
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			MYSQL_FIELD *fields;
+			map <string, string> eInfo;
+			int qstate;
+
+			startConnection();
+
+			if (conn)
+			{
+				// Call the stored procedure from the database
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+
+					int numOfFields = mysql_num_fields(res);
+					fields = mysql_fetch_fields(res);
+
+					while (row = mysql_fetch_row(res))
+					{
+						// Create a dictionary to house the data we will retrieve from the database
+						eInfo = {
+							{"EmployeeID"   , ""},
+							{"FirstName"	, ""},
+							{"LastName"		, ""},
+							{"UserID"	    , ""},
+							{"Password"	    , ""},
+						};
+
+						for (int i = 0; i < numOfFields; i++)
+						{
+							eInfo[fields[i].name] = row[i];
+						
+						}
+					}
+				}
+			}
+
+			return eInfo;
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
 		}
 	}
 
@@ -157,7 +211,9 @@ public:
 				{"PackageName"	,			""},
 				{"PackageDescription",		""},
 				{"Amentities",				""},
-				{"BaseCost",				""}
+				{"BaseCost",				""},
+				{"Available",				""},
+				{"UnderMaintenance",		""}
 			};
 
 			// Connect to Database
@@ -398,6 +454,68 @@ public:
 		}
 	}
 
+	vector<map<string, string>> getSummaryReport()
+	{
+		try
+		{
+			MYSQL_RES * res;
+			MYSQL_ROW row;
+			MYSQL_FIELD *fields;
+			int qstate;
+
+			// Create a vector that will hold all the package types
+			vector<map<string, string>> summaryReport;
+
+			// Create a dictionary to house the data we will retrieve from the database
+			map <string, string> ptInfo = {
+				{"NumReservations"	,		""},
+				{"NumAvailableRooms"	,		""},
+				{"NumUnderMaintenance",		""},
+			};
+
+			// Connect to Database
+			startConnection();
+
+			if (conn)
+			{
+				// Call the stored procedure from the database
+				string query = "CALL SummaryReport()";
+				const char* q = query.c_str();
+				qstate = mysql_query(conn, q);
+
+				if (!qstate)
+				{
+					res = mysql_store_result(conn);
+
+					int numOfFields = mysql_num_fields(res);
+					fields = mysql_fetch_fields(res);
+
+					while (row = mysql_fetch_row(res))
+					{
+						for (int i = 0; i < numOfFields; i++)
+						{
+							if (row[i] != nullptr)
+								ptInfo[fields[i].name] = row[i];
+						}
+
+						summaryReport.push_back(ptInfo);
+						ptInfo.clear();
+					}
+				}
+				else
+				{
+					cout << "Summary Report unavailable." << endl;
+				}
+			}
+
+			return summaryReport;
+		}
+		catch (exception e)
+		{
+			throw exception("Error connecting to our database.");
+		}
+	}
+
 	bool saveToDatabase(string query)
 	{
 		try
@@ -427,41 +545,6 @@ public:
 		catch (exception e)
 		{
 			throw exception("Error connecting to the database.");
-		}
-	}
-
-	void updateRewards (int customerID, int adjustedRewards)
-	{
-		try
-		{
-			MYSQL_RES * res;
-			MYSQL_ROW row;
-			int qstate;
-
-			// Connect to Database
-			startConnection();
-
-			if (conn)
-			{
-				string query = "CALL UpdateRewards(" + to_string(customerID) + "," + to_string(adjustedRewards) + ")";
-				const char* q = query.c_str();
-				qstate = mysql_query(conn, q);
-
-				if (!qstate)
-				{
-					res = mysql_store_result(conn);
-				//	updatedRewards = true;
-				}
-				else
-				{
-					//updatedRewards = false;
-				}
-			}
-		}
-		catch (exception e)
-		{
-			//updatedRewards = false;
-			throw exception("Error connecting to our database.");
 		}
 	}
 

@@ -8,9 +8,10 @@ Modification Date: 10/24/2019
 #include <string>
 #include <fstream>
 // Classes 
+#include "Database.h"
 #include "Employee.h"
 #include "Customer.h"
-#include "Reservartions.h"
+
 using namespace std; 
 
 // Main File for Employee Login/Menu Options and Customer Login/Menu Options
@@ -54,7 +55,7 @@ int main() {
 	cout << "**************************************" << endl;
 	cout << endl;
 
-	cout << "Are you a Cutomer or Employee?." << endl << "0. Customer" << endl << "1. Employee" << endl;
+	cout << "Are you a Customer or Employee?." << endl << "0. Customer" << endl << "1. Employee" << endl;
 	cin >> num2;
 	while (num2 > 1 || num2 < 0)
 	{
@@ -86,6 +87,6 @@ int main() {
 		customerMenuOptionOne();
 
 	}
-	system("pauase");
+	system("pause");
 	return 0;
 }

@@ -14,7 +14,13 @@ private:
 	string firstNameRewards, lastNameRewards, nameRewards;
 	string checkOutMonth, checkOutday, checkOutYear;
 	HotelDB hotel;
+	bool foundRes = false;
 
+	void cancelReservation(int customerID, int reservationID)
+	{
+		string query = "CALL CancelReservation(" + to_string(customerID) + ", " + to_string(reservationID) + ")";
+		reservationCancelled = hotel.saveToDatabase(query);
+	}
 
 public: 
 // Check In Function 
@@ -58,53 +64,6 @@ public:
 
 		return checkOutDate;
 	}
-// Room Packages Function 
-	void roomPackages() {
-		int package; 
-		cout << " ******Room Packages****** " << endl; 
-		cout << endl; 
-		cout << "1. Single King Suite " << endl;
-		cout << "Includes: TV, Free Wifi, Window View, Mini Suite Kitchen" << endl; 
-		cout << "Hotel Amentities Included: Pool, Breakfast, Fitness Center," << endl;
-		cout << "Price: $195 a night" << endl; 
-
-		cout << "2. Double King Suite " << endl;
-		cout << "Includes: TV, Free Wifi, Window View, Mini Suite Kitchen" << endl;
-		cout << "Hotel Amentities Included: Pool, Breakfast, Fitness Center ," << endl;
-		cout << "Price: $195 a night" << endl;
-
-		cout << "3. Deluxe Suite  " << endl; 
-		cout << "Include: TV, Free Wifi, Window View, Jetted Tub, Full Kitchenate Area" << endl;
-		cout << "Hotel Amentities Included: Pool, Breakfast, Fitness Center (Unlimited Use), Hot Tub (Unlimited Access)" << endl;
-		cout << "Price: $300 a night" << endl; 
-
-		cout << "4. Press any key to exit" << endl;
-		cout << "Which Package would you like to add? " << endl; 
-		cin >> package;
-		switch (package) {
-		case 1:
-			cout << "You've selected the Single Suite, excellent choice! " << endl;
-			cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-			cout << endl;
-			getPayment();
-			break;
-		case 2:
-			cout << "You've selected the Double Suite, excellent choice! " << endl;
-			cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-			getPayment();
-			cout << endl;
-			break;
-		case 3:
-			cout << "You've selected the Delux Suite, the best choice! " << endl;
-			cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
-			cout << endl;
-			getPayment();
-			break;
-		case 4:
-			cout << "Thank you for choicing Mo's Hotels! " << endl;
-			break;
-		}
-	}
 // Payment Processing 
 	void getPayment() {
 		string cardName, cardNumber, cardType, cardTrans;
@@ -125,21 +84,94 @@ public:
 	bool reservationCancelled = false;
 
 	#pragma region Database Calls
-
-	void saveReservation(int customerID, int numGuests, string checkInDate, string checkOutDate, string packageTypeID, string addonID, int addonDays, int totalCost)
+	void saveReservation(int customerID, int numGuests, string checkInDate, string checkOutDate, string packageTypeID, string addonID, int addonDays, int totalCost, int adjustedRewards,
+		int available, int underMaintenance)
 	{
 		string query = "CALL SaveReservation(" + to_string(customerID) + ", " + to_string(numGuests) + ", '" + checkInDate + "', '" + checkOutDate
-			+ "', " + packageTypeID + " ," + addonID + ", " + to_string(addonDays) + ", " + to_string(totalCost) + ")";
+			+ "', " + packageTypeID + " ," + addonID + ", " + to_string(addonDays) + ", " + to_string(totalCost) + ", " + to_string(adjustedRewards) 
+			+ "' ," + to_string(available) + ", " + to_string(underMaintenance) + ")";
 
 		reservationSaved = hotel.saveToDatabase(query);
 	}
-
-	void cancelReservation(int customerID, int reservationID)
-	{
-		string query = "CALL CancelReservation(" + to_string(customerID) + ", " + to_string(reservationID) + ")";
-		reservationCancelled = hotel.saveToDatabase(query);
-	}
-
 	#pragma endregion
 
+	void cancelCustomerReservation(int customerID) {
+		string y = "yes";
+		int selectedRes = 0;
+
+		// Get all reservations for a customer and display them
+		vector<map<string, string>> allReservationInfo = hotel.getReservations(customerID);
+
+		// Display all reservations
+		printReservationDetails(allReservationInfo);
+		if (!foundRes)
+		{
+			reservationCancelled = false;
+			return;
+		}
+
+		// Get the reservation to be cancelled
+		selectedRes = menuOptionCheck(selectedRes, allReservationInfo.size(), "Please select the reservation you would like to cancel or select '0' to return to the main menu:");
+
+		if (selectedRes == 0) {
+			reservationCancelled = false;
+			return;
+		}
+
+		// Confirm cancellation
+		cout << "Would you like to cancel your reservation? ";
+		if (cin >> y)
+		{
+			map<string, string> selectedReservation = allReservationInfo[selectedRes - 1];
+			cancelReservation(customerID, stoi(selectedReservation["ReservationID"]));
+			selectedReservation.clear();
+		}
+		else
+		{
+			reservationCancelled = false;
+		}
+	}
+	
+	void printReservationDetails(vector<map<string, string>> allReservationInfo)
+	{
+		if (allReservationInfo.empty())
+		{
+			cout << "	No Reservations Found." << endl << endl;
+			foundRes = false;
+		}
+
+		for (int i = 0; i < allReservationInfo.size(); i++)
+		{
+			cout << i + 1 << ". Customer Reservation Details      " << endl;
+			cout << "	Name: " << allReservationInfo[i]["FirstName"] << " " << allReservationInfo[i]["LastName"] << endl;
+			cout << "	# of Guest During Stay : " << allReservationInfo[i]["NumberOfGuests"] << endl;
+			cout << "	Duration of Stay: " << allReservationInfo[i]["CheckInDate"] << " TO " << allReservationInfo[i]["CheckOutDate"] << endl;
+			cout << "	Package: " << allReservationInfo[i]["PackageTypeID"] << endl;
+			cout << "	" << allReservationInfo[i]["PackageName"] << endl;
+			cout << "	Price: $" << allReservationInfo[i]["BaseCost"] << " a night" << endl;
+
+			if (allReservationInfo[i]["AmenityName"] != "") {
+				cout << "	Added Amenities: " << allReservationInfo[i]["AmenityName"] << " for " << allReservationInfo[i]["AddOnDays"] << " days" << endl;
+			}
+			cout << "	Total Cost: " << allReservationInfo[i]["TotalCost"] << endl << endl;
+		}
+	}
+	
+	int menuOptionCheck(int selectedItem, int menuSize, string message)
+	{
+		cout << message << endl;
+		cin >> selectedItem;
+
+		while (selectedItem == 0 || selectedItem > menuSize)
+		{
+			if (selectedItem == 0) {
+				return 0; //NOTE
+			}
+
+			cout << message << endl;
+			cin >> selectedItem;
+		}
+
+		return selectedItem;
+	}
 };

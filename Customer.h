@@ -25,8 +25,7 @@ private:
 	string phoneNumber = " ";
 	string emailAddress = " ";
 	string password = " ";
-	//Customer Reservation Datatypes
-	reservationClass r; 
+	//Customer Reservation Datatypes 
 	string customerFirstName, customerLastName, duration;
 	string month, day, year, monthOut, dayOut, yearOut;
 	int package, guest;
@@ -35,6 +34,12 @@ private:
 	string customerCheckIn = " / / /", customerCheckOut = " / / /";
 	HotelDB  hotel; 
 	reservationClass res;
+	
+	int calculateRewards(int total)
+	{
+		int adjustedRewards = rewards;
+		return adjustedRewards += total;
+	}
 
 	bool customerDataLoaded = false;
 	bool customerSaved = false;
@@ -46,7 +51,7 @@ private:
 		map <string, string> cInfo = hotel.getCustomerData(query);
 
 		// Set the data
-		if (cInfo.size() != 0) {
+		if (!cInfo.empty()) {
 			customerID = stoi(cInfo["CustomerID"]);
 			firstName = cInfo["FirstName"];
 			lastName = cInfo["LastName"];
@@ -75,6 +80,24 @@ private:
 
 public: 
 /* CUSTOMER ACCOUNT */
+
+	int menuOptionCheck(int selectedItem, int menuSize, string message)
+	{
+		cout << message << endl;
+		cin >> selectedItem;
+
+		while (selectedItem == 0 || selectedItem > menuSize)
+		{
+			if (selectedItem == 0) {
+				customerMenuOptionTwo();
+			}
+
+			cout << message << endl;
+			cin >> selectedItem;
+		}
+
+		return selectedItem;
+	}
 
 // Customer Account Information Function
 	void customerCreateAccount() 
@@ -120,7 +143,7 @@ public:
 		else
 		{
 			cout << "Account information could not be saved! Please try again! " << endl;
-			return; // NOTE: Test!
+			customerMenuOptionTwo();
 		}
 
 		customerLogin();
@@ -198,7 +221,7 @@ public:
 		else
 		{
 			cout << "Unable to retrieve account information. Please try again!" << endl;
-			return; // NOTE: Test!
+			customerLogin();
 		}
 		
 	}
@@ -258,30 +281,23 @@ public:
 		cin >> customerLastName;
 		cout << "# of Guest: ";
 		cin >> guest; 
-		customerCheckIn = r.checkInDate(m, d, y); // NOTE 
-		customerCheckOut = r.checkOutDate(m1, d1, y1); // NOTE
+		customerCheckIn = res.checkInDate(m, d, y); // NOTE 
+		customerCheckOut = res.checkOutDate(m1, d1, y1); // NOTE
 
-		cout << "Packages, Would you like a special type? ";
-		if (cin >> y) {
+		cout << "Packages: ";//, Would you like a special type? ";
+//		if (cin >> y) {
 			cout << endl;
-			customerRoomPackages();
-		}
-		else {
-			cout << "The Following Rooms are below: " << endl;
-			// NOTE what is suppose to happen here?
-		}
-	}
-
-// Customer Add On Options
-	void customerReservationAddOns() {
-
+			customerRoomPackages(); // NOTE: Add fields if they are avaiable or not
+	//	}
+		
 	}
 
 	// Customer Room Packages Function
 	void customerRoomPackages() {
 		string y = "yes";
 		string n = "no";
-		int amentityOption, daysForAmen;
+		int amentityOption = 0;
+		int daysForAmen = 0;
 		int total = 0;
 
 		vector<map<string, string>> allPackageInfo = hotel.getPackageTypes();
@@ -302,16 +318,11 @@ public:
 		}
 
 		cout << "Which Package Would you like? ";
-		cin >> package;
-
-		while (package == 0 || package > allPackageInfo.size())
-		{
-			cout << "Please select from the packages listed above." << endl;
-			cin >> package;
-		}
+		package = menuOptionCheck(package, allPackageInfo.size(), "Please select from the packages listed above.");
 
 		map<string, string> selectedPackage = allPackageInfo[package - 1];
-
+		map<string, string> selectedAddon;
+		
 		cout << "You've selected the " << selectedPackage["PackageName"] << ", excellent choice! " << endl;
 		cout << endl;
 		cout << "Would you like you to add on any amentities? " << endl << endl;
@@ -326,15 +337,9 @@ public:
 			}
 
 			cout << "Which amentities would you like to add? " << endl;
-			cin >> amentityOption;
+			amentityOption = menuOptionCheck(amentityOption, allAddonInfo.size(), "Please select from the amentities listed above.");
 
-			while (amentityOption == 0 || amentityOption > allAddonInfo.size())
-			{
-				cout << "Please select from the amentities listed above." << endl;
-				cin >> amentityOption;
-			}
-
-			map<string, string> selectedAddon = allAddonInfo[amentityOption - 1];
+			selectedAddon = allAddonInfo[amentityOption - 1];
 
 			cout << endl;
 			cout << "**** " << selectedAddon["AmenityName"] << " *****" << endl;
@@ -346,11 +351,11 @@ public:
 
 			total = stoi(selectedPackage["BaseCost"]) + (stoi(selectedAddon["BaseCost"]) * daysForAmen);
 			cout << "Payment Total: $" << total << endl;
-			r.getPayment();
+			res.getPayment();
 			cout << endl;
 
-			// NOTE Save Package NOTE Save reservation
-			res.saveReservation(customerID, guest, customerCheckIn, customerCheckOut, selectedPackage["PackageTypeID"], selectedAddon["AddOnID"], daysForAmen, total);
+			// Save reservation
+			res.saveReservation(customerID, guest, customerCheckIn, customerCheckOut, selectedPackage["PackageTypeID"], selectedAddon["AddOnID"], daysForAmen, total, calculateRewards(total), 0, 0);
 
 			cout << "Would you like to go back to home menu? ";
 			if (cin >> y) {
@@ -361,9 +366,13 @@ public:
 			}
 		}
 		else if (cin >> n) {
+			
+			// Save reservation
+			res.saveReservation(customerID, guest, customerCheckIn, customerCheckOut, selectedPackage["PackageTypeID"], selectedAddon["AddOnID"], daysForAmen, total, calculateRewards(total), 0, 0);
+
 			cout << "Click Next to proceed with payments: " << " NEXT..... " << endl;
 			cout << endl;
-			r.getPayment();
+			res.getPayment();
 			cout << endl;
 			cout << "Would you like to go back to home menu? ";
 			if (cin >> y) {
@@ -375,51 +384,20 @@ public:
 		}
 	}
 
+
 	// Cancel Booking Reservations
-	void cancelCustomerReservation() {
-		string y = "yes";
-		int selectedRes = 0;
-		
-		// Get all reservations for a customer and display them
-		vector<map<string, string>> allReservationInfo = hotel.getReservations(customerID);
+	void cancelCustomerReservation() 
+	{
+		res.cancelCustomerReservation(customerID);
 
-		// Room Packages Information 
-		cout << endl;
-		cout << "The Following Room Packages are listed below: " << endl;
-		cout << endl;
-
-		for (int i = 0; i < allReservationInfo.size(); i++)
+		if (res.reservationCancelled)
 		{
-			cout << i + 1 << ". Customer Reservation Details      " << endl;
-			cout << "	Name: " << allReservationInfo[i]["FirstName"] << " " << allReservationInfo[i]["LastName"] << endl;
-			cout << "	# of Guest During Stay : " << allReservationInfo[i]["NumberOfGuests"] << endl;
-			cout << "	Duration of Stay: " << allReservationInfo[i]["CheckInDate"] << " TO " << allReservationInfo[i]["CheckOutDate"] << endl;
-			cout << "	Package: " << allReservationInfo[i]["PackageTypeID"] << endl;
-			cout << "	" << allReservationInfo[i]["PackageName"] << endl;
-			cout << "	Price: $" << allReservationInfo[i]["BaseCost"] << " a night" << endl;
-
-			if (allReservationInfo[i]["AmenityName"] != "") {
-				cout << "	Added Amenities: " << allReservationInfo[i]["AmenityName"] << " for " << allReservationInfo[i]["AddOnDays"] << " days" << endl;
-			}
-			cout << "	Total Cost: " << allReservationInfo[i]["TotalCost"] << endl << endl;
+			cout << "Your reservation has been cancelled. If you would like to create a new reservation, please go back to the home screen! " << endl;
+			customerMenuOptionTwo();
 		}
-
-		cout << "Please select the reservation you would like to cancel." << endl;
-		cin >> selectedRes;
-
-		while (selectedRes == 0 || package > allReservationInfo.size())
+		else
 		{
-			cout << "Please select a reservation listed above." << endl;
-			cin >> selectedRes;
-		}
-
-		cout << "Would you like to cancel your reservation? ";
-		if (cin >> y) 
-		{
-			map<string, string> selectedReservation = allReservationInfo[selectedRes-1];
-			res.cancelReservation(customerID, stoi(selectedReservation["ReservationID"]));
-			cout << "Your reservation has been canceled. If you would like to create a new reservation, please go back to the home screen! " << endl;
-			selectedReservation.clear();
+			cout << "Your reservation was NOT cancelled." << endl;
 			customerMenuOptionTwo();
 		}
 	}
@@ -427,25 +405,16 @@ public:
 	// Customer Looks at reward points 
 	void customerRewardPoints() {
 
-		int p1Price = 195, p2Price = 155, p3Price = 250;
-		int a1price = 10, a2price = 20, a3price = 30, a4price = 40, a5price = 60;
 		int selectedMenuItem = 0;
 		vector<map<string, string>> eligibleRewards;
 		map<string, string> selectedReward;
-		int currentRewards = 0;
-		int requiredRewards = 0;
-		int adjustedRewards = 0;
-		int reward = 0;
-
-
-		/*
-			NOTE: when assigning points to a customer we will need to get the # of nights a customer stays (NOTE: Add errror handling for non-existent dates)
-		*/
+		int currentRewards, requiredRewards, adjustedRewards, reward = 0;
+		string query = "";
 
 		if (!customerDataLoaded)
 		{
 			cout << "Unable to retrieve Rewards. Please try again later..." << endl;
-			return;
+			customerMenuOptionTwo();
 		}
 
 		// Display customer name and rewards
@@ -458,26 +427,19 @@ public:
 		cout << " 2. View Rewards History" << endl;
 		cout << " 3. How Rewards Work" << endl;
 
-		cin >> selectedMenuItem;
-
-		//while (selectedMenuItem < 0 || selectedMenuItem > 3)
-		//{
-		//	if (selectedMenuItem == 0) {
-		//		cout << "Returning to Main Menu..." << endl << endl;
-		//		return;
-		//	}
-		//}
+		selectedMenuItem = menuOptionCheck(selectedMenuItem, 3, "Please select an option below or select '0' to return to the main menu:");
 
 		switch (selectedMenuItem)
 		{
 		case 1:
-			// RedeemRewards
+			// Redeem Rewards
 
 			// Get Eligible Rewards
 			eligibleRewards = hotel.getEligibleRewards(customerID);
 
 			if (eligibleRewards.size() == 0) {
 				cout << "Whoops! Looks like you are not eliglble for rewards at this time. Please make a reservation to gather more points!" << endl << endl;
+				customerMenuOptionTwo();
 			}
 
 			// Display Eligible Rewards
@@ -489,15 +451,8 @@ public:
 				cout << "   Cost : " << eligibleRewards[i]["RequiredRewards"] << "pts" << endl << endl;
 			}
 
-			cin >> reward;
-
-			while (reward == 0 || reward < eligibleRewards.size())
-			{
-				cout << "Please Select the reward you would like to redeem." << endl << endl;
-				cin >> reward;
-			}
-
 			// Get the selected Reward
+			reward = menuOptionCheck(reward, eligibleRewards.size(), "Please Select the reward you would like to redeem.");
 			selectedReward = eligibleRewards[reward - 1];
 
 			// Adjust Rewards Points
@@ -506,7 +461,8 @@ public:
 			adjustedRewards = currentRewards - requiredRewards;
 
 			// Update customers total rewards
-			hotel.updateRewards(customerID, adjustedRewards);
+			query = "CALL UpdateRewards(" + to_string(customerID) + "," + to_string(adjustedRewards) + ")";
+			hotel.saveToDatabase(query);
 
 			// Apply reward to Reservation and adjust pricing(if any)
 			//cout << "Reward Points amount = 195 " << endl;
@@ -514,32 +470,29 @@ public:
 
 			// Add Rewards Transaction to the Rewards log
 
-			break;
+			customerMenuOptionTwo();
 		case 2:
 			// View Rewards History (would have to create separate table to house all the rewards transactions)
-			break;
+			customerMenuOptionTwo();
 		case 3:
 			// How Rewards Work
-			cout << "The Reward Points are based on the price of the room. If you stay over 2 nights you get double the reward points for 2 nights. " << endl;
+			cout << "The Reward Points are based on the price of the room. They price of a reservation will be the amount of points a customer is awarded when they make a reservation." << endl;
 			cout << "Points are awarded each time a customer schedules a reservation." << endl << endl;
-			//cout << "They are based on the # of nights stayed during a reservation" << endl << endl;
-			cout << "	1 night = 3 points" << endl;
-			cout << "	3 nights = 25 points" << endl;
-			cout << "	12 nights = 300 points = 1 free day at hotel" << endl;
-			break;
+			customerMenuOptionTwo();
 		default:
-			break;
+			customerMenuOptionTwo();
 		}
 	}
 
 	// Customer see hotel amentities
 	void customerHotelAmentities() {
-		int selectedChoice;
+		int selectedChoice = 0;
 		string y = "yes";
 		string n = "no";
 
 		// Get all reservations for a customer and display them
 		vector<map<string, string>> allAmenities = hotel.getHotelAmenities();
+		map<string, string> selectedAmenity;
 
 		cout << endl << "***** Mo's Hotels Amentities *****" << endl;
 		cout << "With your stay you have the option to enjoy the following amentities below: " << endl;
@@ -549,16 +502,9 @@ public:
 			cout << i + 1 << ". " << allAmenities[i]["AmenityName"] << endl;
 		}
 		
-		cout << " If you want more information on each option, please select an option above ";
-		cin >> selectedChoice;
 
-		while (selectedChoice == 0 || selectedChoice > allAmenities.size())
-		{
-			cout << " If you want more information on each option, please select an option above ";
-			cin >> selectedChoice;
-		}
-
-		map<string, string> selectedAmenity = allAmenities[selectedChoice - 1];
+		selectedChoice = menuOptionCheck(selectedChoice, allAmenities.size(), " If you want more information on each option, please select an option above ");
+		selectedAmenity = allAmenities[selectedChoice - 1];
 
 		cout << endl << "******** " << selectedAmenity["AmenityName"] << " ********" << endl;
 		cout << selectedAmenity["AmenityDescription"] << endl;

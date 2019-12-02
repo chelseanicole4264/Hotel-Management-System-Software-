@@ -46,6 +46,8 @@ CREATE TABLE `packagetype` (
   `PackageDescription` varchar(200) DEFAULT NULL,
   `Amentities` varchar(500) DEFAULT NULL,
   `BaseCost` int(11) DEFAULT NULL,
+  `Available` bit(1) DEFAULT b'1',
+  `UnderMaintenance` bit(1) DEFAULT b'0',
   PRIMARY KEY (`PackageTypeID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -61,14 +63,16 @@ CREATE TABLE `reservation` (
   KEY `package_id` (`PackageID`),
   CONSTRAINT `reservation_ibfk_1` FOREIGN KEY (`CustomerID`) REFERENCES `customer` (`CustomerID`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `reservation_ibfk_2` FOREIGN KEY (`PackageID`) REFERENCES `package` (`PackageID`) ON DELETE RESTRICT ON UPDATE CASCADE
-);
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `rewardBenefits` (
-  `BenefitID` int(11) NOT NULL AUTO_INCREMENT,
-  `BenefitName` varchar(255) DEFAULT NULL,
-  `BenefitDescription` varchar(255) DEFAULT NULL,
-  `RequiredRewards` int DEFAULT NULL,
-  PRIMARY KEY (`BenefitID`));
+CREATE TABLE `rewards` (
+  `RewardID` int(11) NOT NULL AUTO_INCREMENT,
+  `RewardName` varchar(255) DEFAULT NULL,
+  `RewardDescription` varchar(255) DEFAULT NULL,
+  `RequiredRewards` int(11) DEFAULT NULL,
+  PRIMARY KEY (`RewardID`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 
 -- START INSERT TABLES SECTION-----------------------------
 	INSERT IGNORE INTO Employee (FirstName, LastName, UserId, Password) VALUES ( "Cindy", "0",	 1, "pass0");
@@ -93,8 +97,15 @@ CREATE TABLE `rewardBenefits` (
     
     INSERT IGNORE INTO Reservation (CustomerID, PackageID, NumberOfGuests, CheckInDate, CheckOutDate) VALUES (@CustomerID, @PackageID, 4, "10/27/2019", "11/04/2019");
 	
-    INSERT IGNORE INTO RewardBenefits (BenefitName, BenefitDescription, RequiredRewards) VALUES ("Free Stay", "1 free day at hotel", 300);
- 
+    INSERT INTO `hotelsystemdb`.`rewards`(
+`RewardName`,
+`RewardDescription`,
+`RequiredRewards`)
+VALUES(
+'Free Stay',
+'1 free day at hotel',
+'300');
+
 -- START Stored Procedures Section-----------------------------
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `CancelReservation`(
@@ -164,11 +175,16 @@ SELECT
 	PackageName,		
 	PackageDescription,	
 	Amentities,			
-	BaseCost
-FROM PackageType;
+	BaseCost,
+    Available,
+    UnderMaintenance
+FROM PackageType 
+	WHERE Available = 1 
+	AND UnderMaintanence <> 1;
 
 END$$
 DELIMITER ;
+
 
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `GetReservations`(
@@ -197,6 +213,7 @@ FROM Reservation r
 WHERE c.CustomerID = customer_id;
 END$$
 DELIMITER ;
+
 
 
 DELIMITER $$
@@ -237,29 +254,88 @@ IN check_out_date varchar(10),
 IN package_type_id int,
 IN add_on_id int,
 IN add_on_days int,
-IN total_cost int)
+IN total_cost int,
+IN reward_points int,
+IN room_available bit,
+IN room_under_maintenance bit)
 BEGIN
+	UPDATE PackageType 
+	SET Available = room_available,
+		UnderMaintenance  = room_under_maintenance
+	WHERE PackageTypeID = package_type_id;
+    
 	INSERT IGNORE INTO Package (PackageTypeID, AddOnID , AddOnDays, TotalCost) 
 						VALUES (package_type_id, add_on_id, add_on_days, total_cost);
-    Set @PackageID = LAST_INSERT_ID();
+    SET @PackageID = LAST_INSERT_ID();
     
     INSERT IGNORE INTO Reservation (CustomerID, PackageID, NumberOfGuests, CheckInDate, CheckOutDate) 
 							VALUES (customer_id, @PackageID, num_guests, check_in_date, check_out_date);
+
+	UPDATE Customer SET RewardsPoints = reward_points where CustomerID = customer_id;
 
 END$$
 DELIMITER ;
 
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `GetEligibleBenefits`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetEligibleRewards`(
+IN customer_id int)
 BEGIN
-SELECT
-	BenefitID,
-    BenefitName,
-    BeneFitDescription,
+
+SET @CustomerID = customer_id;
+SET @CustomerRewardsPoint = 0; -- Setting a default value
+
+SET @CustomerRewardsPoint = (Select RewardsPoints from Customer where CustomerID = @CustomerID);
+
+-- Return a list of all the rewards benefits that a customer is eligible for
+Select 
+	RewardID,
+    RewardName,
+    RewardDescription,
     RequiredRewards
-FROM RewardBenefits;
+FROM Rewards
+	WHERE @CustomerRewardsPoint >= RequiredRewards;
+
 END$$
 DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `UpdateRewards`(
+IN customer_id int,
+IN rewards int)
+BEGIN
+
+UPDATE Customer
+SET RewardsPoints = rewards
+WHERE CustomerID = customer_id;
+
+END$$
+DELIMITER ;
+
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `GetCounts`(
+OUT num_reservations INT,
+OUT num_available_Rooms INT,
+OUT num_under_maintenance INT)
+BEGIN
+SET num_reservations = (SELECT COUNT(ReservationID) FROM Reservation);
+
+SET num_available_Rooms = (SELECT COUNT(PackageTypeID) FROM PackageType where Available = 1);
+
+SET num_under_maintenance = (SELECT COUNT(PackageTypeID) FROM PackageType where UnderMaintenance = 1);
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `SummaryReport`()
+BEGIN
+ CALL GetCounts(@num_Reservations, @num_available, @numUnderMaintenance);
+ SELECT @num_Reservations AS numReservations, @num_available AS numRoomsAvailable, @numUnderMaintenance AS numUnderMaintenance;
+END$$
+DELIMITER ;
+
+
 
 
 
