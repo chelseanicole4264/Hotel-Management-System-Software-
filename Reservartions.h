@@ -4,7 +4,6 @@ Purpose: Employee Class for Hotel System
 
 #pragma once
 #include <iostream>
-#include <fstream>
 #include <string>
 using namespace std;
 
@@ -14,15 +13,13 @@ private:
 	string firstNameRewards, lastNameRewards, nameRewards;
 	string checkOutMonth, checkOutday, checkOutYear;
 	HotelDB hotel;
-	bool foundRes = false;
-
-	void cancelReservation(int customerID, int reservationID)
-	{
-		string query = "CALL CancelReservation(" + to_string(customerID) + ", " + to_string(reservationID) + ")";
-		reservationCancelled = hotel.saveToDatabase(query);
-	}
+	MenuHelper mh;
 
 public: 
+	bool foundRes = false;
+	bool reservationSaved = false;
+	bool reservationCancelled = false;
+
 // Check In Function 
 	string checkInDate(string m, string d, string y) {
 	// Setting Date Variables 
@@ -80,19 +77,24 @@ public:
 		cin >> cardNumber;
 	}
 
-	bool reservationSaved = false;
-	bool reservationCancelled = false;
-
 	#pragma region Database Calls
 	void saveReservation(int customerID, int numGuests, string checkInDate, string checkOutDate, string packageTypeID, string addonID, int addonDays, int totalCost, int adjustedRewards,
 		int available, int underMaintenance)
 	{
-		string query = "CALL SaveReservation(" + to_string(customerID) + ", " + to_string(numGuests) + ", '" + checkInDate + "', '" + checkOutDate
-			+ "', " + packageTypeID + " ," + addonID + ", " + to_string(addonDays) + ", " + to_string(totalCost) + ", " + to_string(adjustedRewards) 
-			+ "' ," + to_string(available) + ", " + to_string(underMaintenance) + ")";
+		hotel.setQuery("CALL SaveReservation(" + to_string(customerID) + ", " + to_string(numGuests) + ", '" + checkInDate + "', '" + checkOutDate
+			+ "', " + packageTypeID + " ," + addonID + ", " + to_string(addonDays) + ", " + to_string(totalCost) + ", " + to_string(adjustedRewards)
+			+ " ," + to_string(available) + ", " + to_string(underMaintenance) + ")");
 
-		reservationSaved = hotel.saveToDatabase(query);
+		reservationSaved = hotel.saveToDatabase();
 	}
+
+
+	void cancelReservation(int customerID, int reservationID)
+	{
+		hotel.setQuery("CALL CancelReservation(" + to_string(customerID) + ", " + to_string(reservationID) + ")");
+		reservationCancelled = hotel.saveToDatabase();
+	}
+
 	#pragma endregion
 
 	void cancelCustomerReservation(int customerID) {
@@ -104,6 +106,7 @@ public:
 
 		// Display all reservations
 		printReservationDetails(allReservationInfo);
+
 		if (!foundRes)
 		{
 			reservationCancelled = false;
@@ -111,7 +114,7 @@ public:
 		}
 
 		// Get the reservation to be cancelled
-		selectedRes = menuOptionCheck(selectedRes, allReservationInfo.size(), "Please select the reservation you would like to cancel or select '0' to return to the main menu:");
+		selectedRes = mh.menuOptionCheck(allReservationInfo.size(), "Please select the reservation you would like to cancel or select '0' to return to the main menu:");
 
 		if (selectedRes == 0) {
 			reservationCancelled = false;
@@ -139,6 +142,7 @@ public:
 			cout << "	No Reservations Found." << endl << endl;
 			foundRes = false;
 		}
+		else { foundRes = true; }
 
 		for (int i = 0; i < allReservationInfo.size(); i++)
 		{
@@ -157,21 +161,21 @@ public:
 		}
 	}
 	
-	int menuOptionCheck(int selectedItem, int menuSize, string message)
-	{
-		cout << message << endl;
-		cin >> selectedItem;
+	//int menuOptionCheck(int selectedItem, int menuSize, string message)
+	//{
+	//	cout << message << endl;
+	//	cin >> selectedItem;
 
-		while (selectedItem == 0 || selectedItem > menuSize)
-		{
-			if (selectedItem == 0) {
-				return 0; //NOTE
-			}
+	//	while (selectedItem == 0 || selectedItem > menuSize)
+	//	{
+	//		if (selectedItem == 0) {
+	//			return 0; //NOTE
+	//		}
 
-			cout << message << endl;
-			cin >> selectedItem;
-		}
+	//		cout << message << endl;
+	//		cin >> selectedItem;
+	//	}
 
-		return selectedItem;
-	}
+	//	return selectedItem;
+	//}
 };
