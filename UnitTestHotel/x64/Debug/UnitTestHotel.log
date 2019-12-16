@@ -1,0 +1,24 @@
+﻿  unittest1.cpp
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\database.h(17): warning C4101: 'row': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\database.h(16): warning C4101: 'res': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\database.h(20): warning C4101: 'qstate': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\database.h(18): warning C4101: 'fields': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\database.h(523): warning C4101: 'row': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\database.h(553): warning C4101: 'qstate': unreferenced local variable
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\reservartions.h(114): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(147): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(152): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(157): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(218): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(380): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(399): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(514): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\customer.h(565): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(135): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(140): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(146): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(173): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(177): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(181): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\csamano\documents\school\hotel-management-system-software--database-setup\employee.h(185): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  UnitTestHotel.vcxproj -> C:\Users\csamano\Documents\School\Hotel-Management-System-Software--Database-Setup\x64\Debug\UnitTestHotel.dll
